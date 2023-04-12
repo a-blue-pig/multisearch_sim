@@ -1,3 +1,3 @@
 <launch>
-  <node name="map_server" pkg="map_server" type="map_server" args="$(find holder)/../maps/map.yaml"/>
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find rg_utils)/../maps/AHG_Apartment_Sim.yaml"/>
 </launch>
