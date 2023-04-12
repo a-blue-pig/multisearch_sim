@@ -1,6 +1,17 @@
 # multisearch_sim
 A Repository of ROS Packages for a multi-robot simulation in gazebo-ROS with many use cases.
 
+
+## Clone & Build
+```
+sudo apt-get install ros-melodic-turtlebot3-msgs
+cd catkin_ws/src
+git clone git@github.com:Ryangupta8/multisearch_sim.git
+source ../devel/setup.bash
+catkin build
+```
+
+
 Current version:
 1) Turtlebot3 ros code from https://github.com/ROBOTIS-GIT/turtlebot3
 2) a map launch for launching the 2D global occupoancy map 
