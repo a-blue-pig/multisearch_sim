@@ -6,7 +6,7 @@
   <arg name="z_pos" default="0.0"/>
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-      <arg name="world_name" value="$(find rg_utils)/../../gazebo_models_worlds_collection/worlds/office_env_large.world"/>
+      <arg name="world_name" value="$(find rg_utils)/../worlds/office_env_large.world"/>
     <!-- <arg name="world_name" value="$(find turtlebot3_gazebo)/worlds/turtlebot3_world.world"/> -->
     <!-- <arg name="world_name" value="$(find ahg_gazebo_simulation)/worlds/ahg_apartment.world"/> -->
     <arg name="paused" value="false"/>
