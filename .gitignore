@@ -1,3 +1,8 @@
 bin/
 build/
 lib/
+vector_display/bin
+vector_display/build
+vector_display/lib
+vector_display/msg_gen
+vector_display/srv_gen

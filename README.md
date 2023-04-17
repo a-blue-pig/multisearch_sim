@@ -18,6 +18,8 @@ cd amrl_msgs && export ROS_PACKAGE_PATH=`pwd`:$ROS_PACKAGE_PATH
 make
 cd ..
 make
+cd vector_display && export ROS_PACKAGE_PATH=`pwd`:$ROS_PACKAGE_PATH
+make
 catkin build
 ```
 
