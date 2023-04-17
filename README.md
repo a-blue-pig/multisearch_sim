@@ -5,10 +5,37 @@ A Repository of ROS Packages for a multi-robot simulation in gazebo-ROS with man
 ## Clone & Build
 ```
 sudo apt-get install ros-melodic-turtlebot3-msgs
+```
+Install ENML dependencies [enml dependencies](https://github.com/ut-amrl/enml)
+```
 cd catkin_ws/src
 git clone git@github.com:Ryangupta8/multisearch_sim.git
 source ../devel/setup.bash
+sudo apt install qt5-default libqt5websockets5-dev libgoogle-glog-dev libgflags-dev
+cd catkin_ws/src/multisearch_sim/enml && ./InstallPackages
+cd catkin_ws/src/multisearch_sim && export ROS_PACKAGE_PATH=`pwd`:$ROS_PACKAGE_PATH
+cd amrl_msgs && export ROS_PACKAGE_PATH=`pwd`:$ROS_PACKAGE_PATH 
+make
+cd ..
+make
 catkin build
+```
+
+Third Party References (Cite if using this repository):
+Implementation in C++ of Episodic non-Markov Localization [[pdf]](https://www.joydeepb.com/Publications/ras_episodic_nonmarkov_localization.pdf).
+Please cite this work using the following bibtex:
+```
+@article{biswas2016episodic,
+  author = { Joydeep Biswas and Manuela M. Veloso },
+  url = { https://www.joydeepb.com/Publications/ras_episodic_nonmarkov_localization.pdf },
+  doi = { 10.1016/j.robot.2016.09.005 },
+  issn = { 0921-8890 },
+  year = { 2017 },
+  pages = { 162 - 176 },
+  volume = { 87 },
+  journal = { Robotics and Autonomous Systems  },
+  title = { Episodic non-Markov localization },
+}
 ```
 
 
