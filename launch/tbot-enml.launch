@@ -6,8 +6,8 @@
     <param name="use_sim_time" value="false"/>
 
     <!-- ENML -->
-    <node pkg="multisearch_sim" type="enml_a1_950" name="non_markov_localization_a1_950" output="screen"
-        args="--config_dir $(find multisearch_sim)/config --robot_config a1-950.lua --maps_dir $(find multisearch_sim)/enml/maps -d1" />
+    <node pkg="multisearch_sim" type="enml_tbot" name="non_markov_localization_tbot" output="screen"
+        args="--config_dir $(find multisearch_sim)/config --robot_config tbot.lua --maps_dir $(find multisearch_sim)/vectormaps -d1" />
     <!-- Vector Display -->
     <node pkg="vector_display" type="vector_display" name="vector_display" output="screen"
         args="--maps_dir $(arg graph_map_location) --map $(arg graph_map_name)" />

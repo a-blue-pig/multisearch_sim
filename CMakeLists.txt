@@ -75,15 +75,15 @@ MESSAGE(STATUS "Includes: ${INCLUDE_DIRECTORIES}")
 
 
 # ADD_SUBDIRECTORY(${PROJECT_SOURCE_DIR}/enml/src/shared)
- ROSBUILD_ADD_EXECUTABLE(enml_a1_950
-     enml/src/non_markov_localization_main_950.cpp
+ ROSBUILD_ADD_EXECUTABLE(enml_tbot
+     enml/src/non_markov_localization_main_tbot.cpp
      enml/src/non_markov_localization.cpp
      enml/src/kdtree.cpp
      enml/src/perception_2d.cpp
      enml/src/vector_map/vector_map.cc
      enml/src/visualization/visualization.cc
      enml/src/visualization/gui_helpers.cc)
- TARGET_INCLUDE_DIRECTORIES(enml_a1_950 PRIVATE
+ TARGET_INCLUDE_DIRECTORIES(enml_tbot PRIVATE
      amrl_shared_lib
      config-reader/include
      enml/src
@@ -91,8 +91,8 @@ MESSAGE(STATUS "Includes: ${INCLUDE_DIRECTORIES}")
      enml/src/config-reader/include
      ${LUA_INCLUDE_DIR}
      ${CERES_INCLUDE_DIRS})
- ADD_DEPENDENCIES(enml_a1_950 rosbuild_precompile)
- TARGET_LINK_LIBRARIES(enml_a1_950 ceres roslib roscpp ncurses pthread boost_system
+ ADD_DEPENDENCIES(enml_tbot rosbuild_precompile)
+ TARGET_LINK_LIBRARIES(enml_tbot ceres roslib roscpp ncurses pthread boost_system
      ${LUA_LIBRARIES} rt popt glog rosbag amrl_shared_lib
      ${BUILD_SPECIFIC_LIBRARIES})
 

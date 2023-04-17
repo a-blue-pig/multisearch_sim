@@ -1,13 +1,13 @@
 RobotConfig = {
-    name = "a1-950";
+    name = "tbot";
     scan_topic = "/scan";
-    pointcloud_topic = "/velodyne_points";
-    odometry_topic = "/tracker/odom/sample";
+    -- pointcloud_topic = "/velodyne_points";
+    odometry_topic = "/odom";
     initialpose_topic = "/initialpose";
   };
   
   enml = {
-    map_name = "AHG_Apartment_temp";
+    map_name = "AHG_Apartment_Sim";
     starting_loc_x = 5.0;
     starting_loc_y = 3.0;
     starting_angle = deg2rad(0);
