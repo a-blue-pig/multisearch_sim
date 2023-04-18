@@ -2,12 +2,13 @@
 A Repository of ROS Packages for a multi-robot simulation in gazebo-ROS with many use cases.
 
 
-## Clone & Build
+## Dependencies
 ```
 sudo apt-get install ros-melodic-turtlebot3-msgs
 ```
 Install ENML dependencies [enml dependencies](https://github.com/ut-amrl/enml)
 ```
+## Clone & Build
 cd catkin_ws/src
 git clone git@github.com:Ryangupta8/multisearch_sim.git
 source ../devel/setup.bash
