@@ -6,7 +6,6 @@ A Repository of ROS Packages for a multi-robot simulation in gazebo-ROS with man
 ```
 sudo apt-get install ros-melodic-turtlebot3-msgs
 ```
-Install ENML dependencies [enml dependencies](https://github.com/ut-amrl/enml)
 
 ## Clone & Build
 
