@@ -96,5 +96,26 @@ MESSAGE(STATUS "Includes: ${INCLUDE_DIRECTORIES}")
      ${LUA_LIBRARIES} rt popt glog rosbag amrl_shared_lib
      ${BUILD_SPECIFIC_LIBRARIES})
 
+ ROSBUILD_ADD_EXECUTABLE(enml
+     enml/src/non_markov_localization_main.cpp
+     enml/src/non_markov_localization.cpp
+     enml/src/kdtree.cpp
+     enml/src/perception_2d.cpp
+     enml/src/vector_map/vector_map.cc
+     enml/src/visualization/visualization.cc
+     enml/src/visualization/gui_helpers.cc)
+ TARGET_INCLUDE_DIRECTORIES(enml PRIVATE
+     amrl_shared_lib
+     config-reader/include
+     enml/src
+     enml/src/shared
+     enml/src/config-reader/include
+     ${LUA_INCLUDE_DIR}
+     ${CERES_INCLUDE_DIRS})
+ ADD_DEPENDENCIES(enml rosbuild_precompile)
+ TARGET_LINK_LIBRARIES(enml ceres roslib roscpp ncurses pthread boost_system
+     ${LUA_LIBRARIES} rt popt glog rosbag amrl_shared_lib
+     ${BUILD_SPECIFIC_LIBRARIES})
+
 
 

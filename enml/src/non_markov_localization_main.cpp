@@ -144,7 +144,10 @@ float kMaxOdometryDeltaAngle = DegToRad(15.0);
 pthread_mutex_t relocalization_mutex_ = PTHREAD_MUTEX_INITIALIZER;
 
 // The directory where all the maps are stored.
-string maps_dir_ = ros::package::getPath("amrl_maps");
+// string maps_dir_ = ros::package::getPath("amrl_maps");
+string maps_dir_header_ = ros::package::getPath("multisearch_sim");
+string tmp_path_ = "/vectormaps";
+string maps_dir_ = maps_dir_header_ + tmp_path_;
 
 // Directory containing all config files, including `common.lua` and `enml.lua`
 const char* config_dir_ = "config";
@@ -1854,7 +1857,7 @@ void OnlineLocalize(bool use_point_constraints, ros::NodeHandle* node) {
   Subscriber odom_subscriber =
       node->subscribe(CONFIG_odom_topic, 1, OdometryCallback);
   Subscriber initialize_subscriber =
-      node->subscribe("/set_pose", 1, InitializeCallback);
+      node->subscribe("initialpose", 1, InitializeCallback);
 
   ClearDisplay();
   PublishDisplay();

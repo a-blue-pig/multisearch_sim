@@ -6,3 +6,4 @@ vector_display/build
 vector_display/lib
 vector_display/msg_gen
 vector_display/srv_gen
+amrl_msgs/src/amrl_msgs/msg/*.pyc

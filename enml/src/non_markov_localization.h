@@ -569,6 +569,12 @@ class NonMarkovLocalization {
 
   // The current map name.
   std::string map_name_;
+
+ public:
+  std::vector<Eigen::Vector2f> stf_points_;
+  std::vector<Eigen::Vector2f> ltf_points_;
+
+  sensor_msgs::LaserScan segmented_scan_;
 };
 
 }  // namespace vector_localization
