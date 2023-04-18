@@ -25,6 +25,23 @@ make
 catkin build
 ```
 
+## Usage
+At the moment this repository is being set up for DAQ for training 2D Lidar Segmentation. 
+Terminal 1: Run Gazebo Sim for Tbot
+```
+source catkin_ws/devel/setup.bash
+roslaunch turtlebot3_gazebo turtlebot3_world.launch
+Terminal 2: Run Vector Display and ENML
+```
+source catkin_ws/devel/setup.bash
+cd catkin_ws/src/multisearch_sim/
+export ROS_PACKAGE_PATH=`pwd`:$ROS_PACKAGE_PATH
+cd amrl_msgs && export ROS_PACKAGE_PATH=`pwd`:$ROS_PACKAGE_PATH
+cd ../vector_display && export ROS_PACKAGE_PATH=`pwd`:$ROS_PACKAGE_PATH
+roslaunch multisearch_sim tbot-enml.launch
+```
+
+
 Third Party References (Cite if using this repository):
 Implementation in C++ of Episodic non-Markov Localization [[pdf]](https://www.joydeepb.com/Publications/ras_episodic_nonmarkov_localization.pdf).
 Please cite this work using the following bibtex:
