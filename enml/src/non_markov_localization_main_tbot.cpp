@@ -42,14 +42,11 @@
 #include "rosbag/view.h"
 #include "sensor_msgs/LaserScan.h"
 #include "sensor_msgs/PointCloud2.h"
-#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
-#include "tf2_ros/transform_listener.h"
 #include "geometry_msgs/Quaternion.h"
-#include "geometry_msgs/Pose.h"
-#include "geometry_msgs/PoseArray.h"
 #include "geometry_msgs/PoseStamped.h"
-#include "geometry_msgs/PoseWithCovarianceStamped.h"
-#include "geometry_msgs/TransformStamped.h"
+#include "tf2/LinearMath/Quaternion.h"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.h"
+#include "tf2_ros/transform_listener.h" 
 #include "tf/transform_broadcaster.h"
 #include <tf2/LinearMath/Quaternion.h>
 
@@ -59,13 +56,13 @@
 #include "non_markov_localization.h"
 #include "perception_2d.h"
 #include "popt_pp/popt_pp.h"
-#include "shared/math/geometry.h"
-#include "shared/math/math_util.h"
-#include "shared/ros/ros_helpers.h"
-#include "shared/util/helpers.h"
-#include "shared/util/pthread_utils.h"
-#include "shared/util/random.h"
-#include "shared/util/timer.h"
+#include "math/geometry.h"
+#include "math/math_util.h"
+#include "ros/ros_helpers.h"
+#include "util/helpers.h"
+#include "util/pthread_utils.h"
+#include "util/random.h"
+#include "util/timer.h"
 #include "vector_map/vector_map.h"
 #include "residual_functors.h"
 #include "config_reader/config_reader.h"
@@ -119,8 +116,6 @@ CONFIG_STRING(initialpose_topic, "RobotConfig.initialpose_topic");
 
 // ROS message for publishing SE(2) pose with map name.
 amrl_msgs::Localization2DMsg localization_msg_;
-// ROS message for PoseStaped rg
-geometry_msgs::PoseStamped pose_msgs_;
 
 // ROS message for visualization with WebViz.
 amrl_msgs::VisualizationMsg visualization_msg_;
@@ -132,9 +127,9 @@ util_random::Random rand_;
 // Name of the map to localize the robot on.
 string kMapName;
 // Robot's starting location.
-Vector2f kStartingLocation = Vector2f(5.0, 5.0);
+Vector2f kStartingLocation = Vector2f(-9.0, 42.837);
 // Robot's starting angle.
-float kStartingAngle = DegToRad(0.0);
+float kStartingAngle = DegToRad(-165.0);
 // Scaling constant to correct for error in angular odometry.
 float kOdometryRotationScale = 1.0;
 // Scaling constant to correct for error in translation odometry.
@@ -172,7 +167,6 @@ int test_set_index_ = -1;
 int statistical_test_index_ = -1;
 
 // The fraction of additive odometry noise for statistical tests.
-// RG todo
 double odometry_additive_noise_ = 0.05;
 
 //static const uint32_t kTrajectoryColor = 0x6FFF0000;
@@ -198,9 +192,8 @@ ros::Publisher localization_publisher_amrl_;
 // ROS publisher to publish the latest robot localization w/ ros geometry_msgs.
 ros::Publisher localization_publisher_ros_;
 
-// ROS publisher to publish STFs (curiosity) RG
+// ROS Publisher to publish the segmented scan
 ros::Publisher segmented_scan_pub_;
-//ros::Publisher stf_poses_publisher_;
 
 // Parameters and settings for Non-Markov Localization.
 NonMarkovLocalization::LocalizationOptions localization_options_;
@@ -300,13 +293,12 @@ void PublishLocation(
   localization_publisher_amrl_.publish(localization_msg_);
   localization_publisher_ros_.publish(ConvertAMRLmsgToROSmsg(localization_msg_));
 
-  // In addition we need map-base transform
+  // Also broadcast a transform
   static tf2_ros::TransformBroadcaster br;
   geometry_msgs::TransformStamped transformStamped;
-
   transformStamped.header.stamp = ros::Time::now();
   transformStamped.header.frame_id = "map";
-  transformStamped.child_frame_id = "base";
+  transformStamped.child_frame_id = "base_footprint";
   transformStamped.transform.translation.x = x;
   transformStamped.transform.translation.y = y;
   transformStamped.transform.translation.z = 0.0;
@@ -316,28 +308,7 @@ void PublishLocation(
   transformStamped.transform.rotation.y = q.y();
   transformStamped.transform.rotation.z = q.z();
   transformStamped.transform.rotation.w = q.w();
-
-  br.sendTransform(transformStamped);
-  // End TF2 Broadcaster
-
-
-  // We need to publish Segmented Lidar
-  std::vector<Eigen::Vector2f> stfpts;
-  stfpts = localization_->stf_points_;
-  geometry_msgs::PoseArray pose_arry_msg;
-  pose_arry_msg.header.stamp.fromSec(GetWallTime());
-  pose_arry_msg.header.frame_id = "map";
-  for(int i(0);i<(int)(stfpts.size());i++)
-  {
-    geometry_msgs::Pose tmp;
-    tmp.position.x=stfpts[i][0];
-    tmp.position.y=stfpts[i][1];
-    tmp.orientation.w = 1.0;
-    pose_arry_msg.poses.push_back(tmp);
-  }
-
-  // stf_poses_publisher_.publish(pose_arry_msg);
-
+  // br.sendTransform(transformStamped);
 
 
 }
@@ -1096,97 +1067,45 @@ void DrawLtfs(
   }
 }
 
-// Curiosity
-void SaveStfsObservations(
+// RG need to get point_cloud classifications
+// and convert them to Lidar Scan for publishing
+void PublishSegmentedScan(
         const size_t start_pose, const size_t end_pose,
         const vector<double>& poses,
         const vector<vector< Vector2f> >& point_clouds,
-        const std::vector< NormalCloudf >& normal_clouds,
-        const vector<vector<NonMarkovLocalization::ObservationType> >&
-                classifications, std::vector<Vector2f>& ltfpoints, std::vector<Vector2f>& stfpoints,
-                sensor_msgs::LaserScan& segment) {
-  stfpoints.clear();
-  for (size_t i = 0; i <= end_pose; ++i) {
-    const vector<Vector2f> &point_cloud = point_clouds[i];
-    const Vector2f pose_location(poses[3 * i + 0], poses[3 * i + 1]);
-    const float pose_angle = poses[3 * i + 2];
-    const Rotation2Df pose_rotation(pose_angle);
-    const Affine2f pose_transform =
-        Translation2f(pose_location) * pose_rotation;
-    for (size_t j = 0; j < point_cloud.size(); ++j) {
-      const Vector2f point = pose_transform * point_cloud[j];
-      if (i >= start_pose) {
-        segment.angle_min = 0.0;
-        segment.angle_max = 6.28;
-        segment.angle_increment = segment.angle_max / point_cloud.size();
-        segment.ranges[j] = sqrt(pow(pose_location[0] - point[0], 2) +
-                pow(pose_location[1] - point[1], 2));
-        switch (classifications[i][j]) {
-          case NonMarkovLocalization::kLtfObservation : {
-            segment.intensities[j] = 1.0;
-            // continue;
-          } break;
-          case NonMarkovLocalization::kStfObservation : {
-            segment.intensities[j] = 2.0;
-            } break;
-          case NonMarkovLocalization::kDfObservation : {
-            segment.intensities[j] = 3.0;
-            if (i == end_pose) continue;
-          } break;
-        }
-        segment.header.stamp.fromSec(GetWallTime());
-        segmented_scan_pub_.publish(segment);
-      }
-    }
-  }
-}
-
-void SaveSegmentedScan(std::vector<Vector2f>& ltfpoints, std::vector<Vector2f>& stfpoints,
+        const vector<vector<NonMarkovLocalization::ObservationType> >& classifications,
         sensor_msgs::LaserScan& segment){
-
-}
-
-
-void SaveLtfsObservations(
-        const size_t start_pose, const size_t end_pose,
-        const vector<double>& poses,
-        const vector<vector< Vector2f> >& point_clouds,
-        const std::vector< NormalCloudf >& normal_clouds,
-        const vector<vector<NonMarkovLocalization::ObservationType> >&
-                classifications, std::vector<Vector2f>& ltfpoints,
-                //rg
-                sensor_msgs::LaserScan& segment) {
-  ltfpoints.clear();
-  for (size_t i = 0; i <= end_pose; ++i) {
-    const vector<Vector2f> &point_cloud = point_clouds[i];
-    const Vector2f pose_location(poses[3 * i + 0], poses[3 * i + 1]);
-    const float pose_angle = poses[3 * i + 2];
+    const vector<Vector2f> &point_cloud = point_clouds[end_pose];
+    const Vector2f pose_location(poses[3 * end_pose + 0], poses[3 * end_pose + 1]);
+    const float pose_angle = poses[3 * end_pose + 2];
     const Rotation2Df pose_rotation(pose_angle);
-    const Affine2f pose_transform =
-        Translation2f(pose_location) * pose_rotation;
-
+    const Affine2f pose_transform = Translation2f(pose_location) * pose_rotation;
+    segment.angle_min = 0.0;
+    segment.angle_max = 6.28;
+    segment.angle_increment = segment.angle_max / point_cloud.size();
+    segment.ranges.resize(point_cloud.size());
+    segment.intensities.resize(point_cloud.size());
     for (size_t j = 0; j < point_cloud.size(); ++j) {
       const Vector2f point = pose_transform * point_cloud[j];
-      if (i >= start_pose) {
-        switch (classifications[i][j]) {
-          case NonMarkovLocalization::kLtfObservation : {
-                ltfpoints.push_back(point);
-          } break;
-          case NonMarkovLocalization::kStfObservation : {
-            continue;
+          segment.ranges[j] = sqrt(pow(pose_location[0] - point[0], 2) +
+                  pow(pose_location[1] - point[1], 2));
+          switch (classifications[end_pose][j]) {
+            case NonMarkovLocalization::kLtfObservation : {
+              segment.intensities[j] = 1.0;
             } break;
-          case NonMarkovLocalization::kDfObservation : {
-            continue;
-            if (i == end_pose) continue;
-          } break;
-        }
-      }
+            case NonMarkovLocalization::kStfObservation : {
+              segment.intensities[j] = 0.5;
+            } break;
+            case NonMarkovLocalization::kDfObservation : {
+              segment.intensities[j] = 0.0;
+            } break;
+          }
     }
-  }
+
+    segment.header.stamp.fromSec(GetWallTime());
+    segmented_scan_pub_.publish(segment);
+
 }
-
-
-
 
 
 void DrawObservations(
@@ -1402,11 +1321,6 @@ void CorrespondenceCallback(
   }
   DrawPoses(start_pose, end_pose, odometry_poses, poses, covariances);
   DrawGradients(start_pose, end_pose, gradients, poses);
-  SaveLtfsObservations(start_pose, end_pose, poses, point_clouds, normal_clouds,
-          classifications, localization_->ltf_points_, localization_->segmented_scan_);
-  SaveStfsObservations(start_pose, end_pose, poses, point_clouds, normal_clouds,
-          classifications, localization_->ltf_points_, localization_->stf_points_,
-          localization_->segmented_scan_);
   DrawObservations(start_pose, end_pose, poses, point_clouds, normal_clouds,
                    classifications);
   DrawVisibilityConstraints(visibility_constraints, poses);
@@ -1427,6 +1341,8 @@ void CorrespondenceCallback(
   if (kDisplayStfCorrespondences) {
     DrawStfs(point_point_correspondences, poses, point_clouds, normal_clouds);
   }
+  PublishSegmentedScan(start_pose, end_pose, poses, point_clouds,
+          classifications, localization_->segmented_scan_);
   PublishDisplay();
 }
 
@@ -1921,8 +1837,8 @@ void PlayBagFile(const string& bag_file,
           &init_map)) {
         if (debug_level_ > 0) {
           printf("Initializing location to %s: %f,%f, %f\u00b0\n",
-              init_map.c_str(), init_location.x(), init_location.y(),
-              DegToRad(init_angle));
+                 init_map.c_str(), init_location.x(), init_location.y(),
+                 DegToRad(init_angle));
         }
         const Pose2Df init_pose(init_angle, init_location.x(),
                                 init_location.y());
@@ -1978,46 +1894,7 @@ void InitializeCallback(const amrl_msgs::Localization2DMsg& msg) {
       Pose2Df(msg.pose.theta, Vector2f(msg.pose.x, msg.pose.y)), msg.map);
   localization_publisher_amrl_.publish(msg);
   localization_publisher_ros_.publish(ConvertAMRLmsgToROSmsg(msg));
-  ////////////////////////////////////////
-  // In addition we need map-base transform
-  static tf2_ros::TransformBroadcaster br;
-  geometry_msgs::TransformStamped transformStamped;
 
-  transformStamped.header.stamp = ros::Time::now();
-  transformStamped.header.frame_id = "map";
-  transformStamped.child_frame_id = "base";
-  transformStamped.transform.translation.x = msg.pose.x;
-  transformStamped.transform.translation.y = msg.pose.y;
-  transformStamped.transform.translation.z = 0.0;
-  tf2::Quaternion q;
-  q.setRPY(0, 0, msg.pose.theta);
-  transformStamped.transform.rotation.x = q.x();
-  transformStamped.transform.rotation.y = q.y();
-  transformStamped.transform.rotation.z = q.z();
-  transformStamped.transform.rotation.w = q.w();
-
-  br.sendTransform(transformStamped);
-  // End TF2 Broadcaster
-  // //////////////////
-
-  // /////////////////
-  // We need to publish STFs
-  std::vector<Eigen::Vector2f> stfpts;
-  stfpts = localization_->stf_points_;
-  // geometry_msgs::PoseArray pose_arry_msg;
-  // pose_arry_msg.header.stamp.fromSec(GetWallTime());
-  // pose_arry_msg.header.frame_id = "map";
-  // for(int i(0);i<(int)(stfpts.size());i++)
-  // {
-  //   geometry_msgs::Pose tmp;
-  //   tmp.position.x=stfpts[i][0];
-  //   tmp.position.y=stfpts[i][1];
-  //   tmp.orientation.w = 1.0;
-  //   pose_arry_msg.poses.push_back(tmp);
-  // }
-
-  // stf_poses_publisher_.publish(pose_arry_msg);
-  // /////////////////
   if (false) {
     const string map_file = StringPrintf(
         "%s/%s/%s.vectormap.txt",
@@ -2048,7 +1925,7 @@ void OnlineLocalize(bool use_point_constraints, ros::NodeHandle* node) {
   Subscriber odom_subscriber =
       node->subscribe(CONFIG_odom_topic, 1, OdometryCallback);
   Subscriber initialize_subscriber =
-      node->subscribe(CONFIG_initialpose_topic, 1, InitializeCallback);
+      node->subscribe("initialpose", 1, InitializeCallback);
 
   ClearDisplay();
   PublishDisplay();
@@ -2174,6 +2051,7 @@ int main(int argc, char** argv) {
   ros::init(argc, argv, node_name, ros::init_options::NoSigintHandler);
   ros::NodeHandle ros_node;
   InitializeMessages();
+  segmented_scan_pub_ = ros_node.advertise<sensor_msgs::LaserScan>("segmented_scan", 1, true); 
   localization_publisher_amrl_ =
       ros_node.advertise<amrl_msgs::Localization2DMsg>(
       "localization", 1, true);
@@ -2186,10 +2064,6 @@ int main(int argc, char** argv) {
         "visualization", 1, true);
     visualization_msg_ = visualization::NewVisualizationMessage("map", "enml");
   }
-
-  segmented_scan_pub_ = ros_node.advertise<sensor_msgs::LaserScan>("segmented_scan", 1, true);
-
-  std::cout << "debug level = " << debug_level_ << std::endl;
 
   if (bag_file != NULL) {
     PlayBagFile(
