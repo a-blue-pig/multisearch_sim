@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="graph_map_location" default="$(find multisearch_sim)/vectormaps"/>
-    <arg name="graph_map_name" default="AHG_Apartment_Sim"/>
+    <!-- <arg name="graph_map_name" default="AHG_Apartment_Sim"/> -->
+    <arg name="graph_map_name" default="office_cpr"/>
 
     <param name="use_sim_time" value="false"/>
 
