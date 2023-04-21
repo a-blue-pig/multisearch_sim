@@ -6,11 +6,12 @@
   <arg name="z_pos" default="0.0"/>
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find rg_utils)/../worlds/fetchit_challenge_arena_montreal2019.world"/>
+    <!-- <arg name="world_name" value="$(find rg_utils)/../worlds/fetchit_challenge_arena_montreal2019.world"/> -->
     <!-- <arg name="world_name" value="$(find rg_utils)/../worlds/cyberzoo2019_orange_poles_panels.world"/> -->
     <!-- <arg name="world_name" value="$(find rg_utils)/../worlds/office_cpr.world"/> -->
     <!-- <arg name="world_name" value="$(find turtlebot3_gazebo)/worlds/turtlebot3_world.world"/> -->
     <!-- <arg name="world_name" value="$(find ahg_gazebo_simulation)/worlds/ahg_apartment.world"/> -->
+    <arg name="world_name" value="$(find rg_utils)/../worlds/house.world"/>
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
     <arg name="gui" value="true"/>
