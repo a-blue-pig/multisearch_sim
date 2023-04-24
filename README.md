@@ -31,6 +31,7 @@ Terminal 1: Run Gazebo Sim for Tbot
 ```
 source catkin_ws/devel/setup.bash
 roslaunch turtlebot3_gazebo turtlebot3_world.launch
+```
 Terminal 2: Run Vector Display and ENML
 ```
 source catkin_ws/devel/setup.bash
