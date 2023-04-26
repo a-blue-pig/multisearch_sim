@@ -54,7 +54,7 @@ using std::vector;
 
 #define V2COMP(v) v.x, v.y
 
-DEFINE_string(maps_dir, "maps", "Directory to load maps from");
+DEFINE_string(maps_dir, "../vectormaps", "Directory to load maps from");
 DEFINE_bool(edit_localization, false, "Edit localization map");
 DEFINE_bool(edit_navigation, false, "Edit navigation map");
 DEFINE_bool(edit_semantic, false, "Edit semantic map");
