@@ -27,7 +27,7 @@ catkin build
 
 ## Usage
 
-# ENML Labeld Data Collection
+### ENML Labeld Data Collection
 At the moment this repository is being set up for DAQ for training 2D Lidar Segmentation. 
 Terminal 1: Run Gazebo Sim for Tbot
 ```
@@ -54,7 +54,7 @@ source catkin_ws/deve/setup.bash
 rosbag r
 ```
 
-# Editing Vectormaps using vector display
+### Editing Vectormaps using vector display
 NOTE: LAUNCH THE tbot-enml.launch script above first, localize the tbot in ENML using
 shift+click and drag and THEN ```rosnode kill /vector_display```
 After you have done this, then:
