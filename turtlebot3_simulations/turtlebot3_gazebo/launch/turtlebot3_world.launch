@@ -9,7 +9,7 @@
       <!-- <arg name="world_name" value="$(find rg_utils)/../worlds/office_env_large.world"/> -->
     <!-- <arg name="world_name" value="$(find turtlebot3_gazebo)/worlds/turtlebot3_world.world"/> -->
     <!-- <arg name="world_name" value="$(find ahg_gazebo_simulation)/worlds/ahg_apartment.world"/> -->
-    <arg name="world_name" value="$(find rg_utils)/../worlds/office_cpr.world"/>
+    <arg name="world_name" value="$(find rg_utils)/../worlds/workshop_example.world"/>
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
     <arg name="gui" value="true"/>
