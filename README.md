@@ -26,12 +26,20 @@ catkin build
 ```
 
 ## Usage
+
+### ENML Labeld Data Collection
 At the moment this repository is being set up for DAQ for training 2D Lidar Segmentation. 
 Terminal 1: Run Gazebo Sim for Tbot
 ```
 source catkin_ws/devel/setup.bash
 roslaunch turtlebot3_gazebo turtlebot3_world.launch
-Terminal 2: Run Vector Display and ENML
+```
+Terminal 2: Run Tbot Navigation
+```
+source catkin_ws/devel/setup.bash
+roslaunch turtlebot3_navigation turtlebot3_navigation.launch
+```
+Terminal 3: Run Vector Display and ENML
 ```
 source catkin_ws/devel/setup.bash
 cd catkin_ws/src/multisearch_sim/
@@ -40,6 +48,27 @@ cd amrl_msgs && export ROS_PACKAGE_PATH=`pwd`:$ROS_PACKAGE_PATH
 cd ../vector_display && export ROS_PACKAGE_PATH=`pwd`:$ROS_PACKAGE_PATH
 roslaunch multisearch_sim tbot-enml.launch
 ```
+Terminal 4: Rosbag to collect the data
+```
+source catkin_ws/deve/setup.bash
+rosbag r
+```
+
+### Editing Vectormaps using vector display
+NOTE: LAUNCH THE tbot-enml.launch script above first, localize the tbot in ENML using
+shift+click and drag and THEN ```rosnode kill /vector_display```
+After you have done this, then:
+```
+source catkin_ws/devel/setup.bash
+cd multisearch_sim
+export ROS_PACKAGE_PATH=`pwd`:$ROS_PACKAGE_PATH
+cd amrl_msgs && export ROS_PACKAGE_PATH=`pwd`:$ROS_PACKAGE_PATH
+cd ../vector_display && export ROS_PACKAGE_PATH=`pwd`:$ROS_PACKAGE_PATH
+./bin/vector_display --map office_cpr --edit_localization=true
+```
+Shift+click and drag to add lines to the map
+Ctrl+click to remove lines from the map
+
 
 
 Third Party References (Cite if using this repository):
